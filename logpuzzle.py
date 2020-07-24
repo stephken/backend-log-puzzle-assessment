@@ -1,4 +1,13 @@
 #!/usr/bin/env python2
+import os
+import re
+import sys
+import argparse
+
+if sys.version_info[0] >= 3:
+    from urllib.request import urlretrieve
+else:
+    from urllib import urlretrieve
 """
 Log Puzzle exercise
 
@@ -15,15 +24,6 @@ rv:1.8.1.6) Gecko/20070725 Firefox/2.0.0.6"
 """
 _author_ = "Ken Stephens"
 
-import os
-import re
-import sys
-if sys.version_info[0] >= 3:
-    from urllib.request import urlretrieve
-else:
-    from urllib import urlretrieve
-import argparse
-
 
 def read_urls(filename):
     """Returns a list of the puzzle URLs from the given log file,
@@ -39,29 +39,36 @@ def read_urls(filename):
             puzzle_urls.append(url_result[0])
     url_list = create_urls(puzzle_urls)
     url_list = list(set(url_list))
-    sorted_urls = sorted(url_list, key= return_last_word)
+    sorted_urls = sorted(url_list, key=return_last_word)
+    return sorted_urls
 
 
-    def extract_host_name(url):
-        host = re.findall(r'Get(\S+) HTTP', url)
+def extract_host_name(url):
+    """returns a list of the puzzle Urls from the log file given,
+    extracting the hostame from the filename, sorting alphabetically
+    in increasing order, and screening out duplictes"""
+    host = re.findall(r'Get(\S+) HTTP', url)
 
-        return sorted_urls
+    return host
+
 
 def create_urls(urls):
-        front = 'http://code.google.com'
-        url_return = [front + url for url in urls]
+    front = 'http://code.google.com'
+    url_return = [front + url for url in urls]
 
-        return url_return
+    return url_return
+
 
 def return_last_word(url):
-        return re.findall(r'-(....).jpg', url)
+    return re.findall(r'-(....).jpg', url)
+
 
 def add_prefixes(filename, host_list):
     'suppose to add server prefixes to the urls in the host list'
-    server_name = 'https://' + re.findall(r'\S+\_(\S+)', filename) [0]
+    server_name = 'https://' + re.findall(r'\S+\_(\S+)', filename)[0]
     completed_url_list = [server_name + host for host in host_list]
 
-    return completed_url_list   
+    return completed_url_list
 
 
 def download_images(img_urls, dest_dir):
@@ -85,9 +92,6 @@ def download_images(img_urls, dest_dir):
 
     with open(dest_dir + '/index.html', 'w') as w_index:
         w_index.write(index_html)
-
-
-
 
 
 def create_parser():
