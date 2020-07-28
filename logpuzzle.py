@@ -35,7 +35,7 @@ def read_urls(filename):
         log_list = log_file.read().split('\n')
         log_list = list(filter(lambda x: '/puzzle' in x, log_list))
         for url in log_list:
-            url_result = re.findall(r'GET (\s+) HTTP', url)
+            url_result = re.findall(r'GET (\S+) HTTP', url)
             puzzle_urls.append(url_result[0])
     url_list = create_urls(puzzle_urls)
     url_list = list(set(url_list))
