@@ -1,4 +1,13 @@
 #!/usr/bin/env python2
+import os
+import re
+import sys
+import argparse
+
+if sys.version_info[0] >= 3:
+    from urllib.request import urlretrieve
+else:
+    from urllib import urlretrieve
 """
 Log Puzzle exercise
 
@@ -13,12 +22,7 @@ Here's what a puzzle URL looks like (spread out onto multiple lines):
 HTTP/1.0" 302 528 "-" "Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US;
 rv:1.8.1.6) Gecko/20070725 Firefox/2.0.0.6"
 """
-
-import os
-import re
-import sys
-import urllib.request
-import argparse
+_author_ = "Ken Stephens"
 
 
 def read_urls(filename):
@@ -26,8 +30,45 @@ def read_urls(filename):
     extracting the hostname from the filename itself, sorting
     alphabetically in increasing order, and screening out duplicates.
     """
-    # +++your code here+++
-    pass
+    puzzle_urls = []
+    with open(filename, 'r') as log_file:
+        log_list = log_file.read().split('\n')
+        log_list = list(filter(lambda x: '/puzzle' in x, log_list))
+        for url in log_list:
+            url_result = re.findall(r'GET (\S+) HTTP', url)
+            puzzle_urls.append(url_result[0])
+    url_list = create_urls(puzzle_urls)
+    url_list = list(set(url_list))
+    sorted_urls = sorted(url_list, key=return_last_word)
+    return sorted_urls
+
+
+def extract_host_name(url):
+    """returns a list of the puzzle Urls from the log file given,
+    extracting the hostame from the filename, sorting alphabetically
+    in increasing order, and screening out duplictes"""
+    host = re.findall(r'Get(\S+) HTTP', url)
+
+    return host
+
+
+def create_urls(urls):
+    front = 'http://code.google.com'
+    url_return = [front + url for url in urls]
+
+    return url_return
+
+
+def return_last_word(url):
+    return re.findall(r'-(....).jpg', url)
+
+
+def add_prefixes(filename, host_list):
+    'suppose to add server prefixes to the urls in the host list'
+    server_name = 'https://' + re.findall(r'\S+\_(\S+)', filename)[0]
+    completed_url_list = [server_name + host for host in host_list]
+
+    return completed_url_list
 
 
 def download_images(img_urls, dest_dir):
@@ -38,8 +79,19 @@ def download_images(img_urls, dest_dir):
     to show each local image file.
     Creates the directory if necessary.
     """
-    # +++your code here+++
-    pass
+    if not os.path.exists(dest_dir):
+        os.makedirs(dest_dir)
+        print('dir was made')
+    index_html = '<html><body>'
+    for index, url in enumerate(img_urls):
+        image_name = 'img' + str(index)
+        print('Retrieving {}'.format(url))
+        urlretrieve(url, dest_dir + '/' + image_name)
+        index_html += '<img src={}></img>'.format(image_name)
+    index_html += '</body></html>'
+
+    with open(dest_dir + '/index.html', 'w') as w_index:
+        w_index.write(index_html)
 
 
 def create_parser():
